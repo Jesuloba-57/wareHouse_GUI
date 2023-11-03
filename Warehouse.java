@@ -164,6 +164,8 @@ public class Warehouse implements Serializable{
 
     public Iterator getProducts() { return catalog.getProducts();}
 
+    //public String getMemberInfo() { return member.}
+
     public Iterator getMembers() {
         return memberList.getMembers();
     }

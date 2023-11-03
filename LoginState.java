@@ -138,6 +138,7 @@ public class LoginState extends WarehouseState{
                     break;
                 case MANAGER_LOGIN:     manager();
                     break;
+
                 default:                System.out.println("Invalid choice");
 
             }
@@ -146,7 +147,7 @@ public class LoginState extends WarehouseState{
                     "input 2 to login as Client\n" +
                     "Input 3 to exit the system\n");
         }
-        (WarehouseContext.instance()).changeState(2);
+        (WarehouseContext.instance()).changeState(3);
     }
 
     public void run() {

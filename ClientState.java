@@ -72,18 +72,154 @@ public class ClientState extends WarehouseState {
     }
 
     public void viewAccount(){
-        System.out.println("View Account");
-
+        String name = getToken("Enter Member Name: ");
+        if(warehouse.findMemberByName(name) != null) {
+            Member member = warehouse.findMemberByName(name);
+            System.out.println(member.toString());
+        }
+        else{
+            System.out.println("Member does not exist");
+        }
     }
     public void checkPrice(){
-        System.out.println("check Price");
+        String name = getToken("Enter Product Name: ");
+        if(warehouse.findProductByName(name) != null) {
+            Product product = warehouse.findProductByName(name);
+            String price = "Price: $" + product.getPrice();
+            System.out.println(price);
+        }
+        else{
+            System.out.println("Product does not exist");
+        }
     }
     public void processWishlist(){
-        System.out.println("process Wishlist");
+        //System.out.println("process Wishlist");
+        String Name = getToken("Enter Client Name: ");
+        Member member = warehouse.findMemberByName(Name);
+        Iterator wishIter = warehouse.getWishlist(member);
+
+        System.out.println("Your processing Options:");
+        System.out.println("1. Add item to Invoice");
+        System.out.println("2. Remove item from wishlist");
+        System.out.println("3. Change item quantity and add to Invoice");
+
+        while (wishIter.hasNext()) {
+            Record wish = (Record) (wishIter.next());
+            System.out.println(wish.toString());
+            int choice = getNumber("Enter your choice:");
+            switch (choice) {
+                case 1:
+                    int success = warehouse.addToInvoices(wish, member);
+                    if (success == 0) {
+                        System.out.println("Item Added");
+                    } else if (success == 1) {
+                        System.out.println("Item Added to Waitlist");
+                    } else {
+                        System.out.println("Unexpected Input");
+                    }
+
+                case 2:
+                    if (member != null) {
+                        Record record = new Record(wish.getProduct(), member, wish.getQuantity(), wish.getPrice());
+                        boolean removed = warehouse.removeFromWishlist(member, record);
+                        if (removed) {
+                            System.out.println("Item removed from the wishlist.");
+                        } else {
+                            System.out.println("Item was not found on the wishlist.");
+                        }
+                    } else {
+                        System.out.println("Product or member not found.");
+                    }
+                    break;
+
+                case 3:
+                    if (member != null) {
+                        int newQuantity = getNumber("Enter the new quantity:");
+                        wish.setQuantity(newQuantity);
+                        int done = warehouse.addToInvoices(wish, member);
+                        if (done == 0) {
+                            System.out.println("Item Added");
+                        } else if (done == 1) {
+                            System.out.println("Item Added to Waitlist");
+                        } else {
+                            System.out.println("Unexpected Input");
+                        }
+                        break;
+                    }
+            }
+        }
+        warehouse.getInvoices(member);
     }
     public void modifyWishlist(){
-        System.out.println("modify Wishlist");
-    }
+        //System.out.println("modify Wishlist");
+        String Name = getToken("Enter Client Name: ");
+        Member member = warehouse.findMemberByName(Name);
+        Iterator wishIter = warehouse.getWishlist(member);
+
+        System.out.println("Your processing Options:");
+        System.out.println("1. Add item to wishlist");
+        System.out.println("2. Remove item from wishlist");
+        System.out.println("3. Change item quantity on wishlist");
+        System.out.println("4. Display Wishlist");
+
+        while (wishIter.hasNext()) {
+            Record wish = (Record) (wishIter.next());
+            System.out.println(wish.toString());
+            int choice = getNumber("Enter your choice:");
+            switch (choice) {
+                case 1:
+                    String productName = getToken("Enter Product Name");
+                    //String memberName = getToken("Enter Member Name");
+                    int quantity = getNumber("Enter Quantity");
+
+                    Product product = warehouse.findProductByName(productName);
+                    //Member member = warehouse.findMemberByName(memberName);
+                    float price = product.getPrice();
+                    if (product != null && member != null) {
+                        Record record = new Record(product, member, quantity, price);
+                        boolean added = warehouse.addToWishlist(member, record);
+
+                        if (added) {
+                            System.out.println("Item added to the wishlist.");
+                        } else {
+                            System.out.println("Item could not be added to the wishlist.");
+                        }
+                    } else {
+                        System.out.println("Product or member not found.");
+                    }
+
+                case 2:
+                    if (member != null) {
+                        Record record = new Record(wish.getProduct(), member, wish.getQuantity(), wish.getPrice());
+                        boolean removed = warehouse.removeFromWishlist(member, record);
+                        if (removed) {
+                            System.out.println("Item removed from the wishlist.");
+                        } else {
+                            System.out.println("Item was not found on the wishlist.");
+                        }
+                    } else {
+                        System.out.println("Product or member not found.");
+                    }
+                    break;
+
+                case 3:
+                    if (member != null) {
+                        int newQuantity = getNumber("Enter the new quantity:");
+                        wish.setQuantity(newQuantity);
+                        System.out.println("New Quantity for " + wish.getProduct() + " is " + wish.getQuantity());
+                        //int done = warehouse.addToInvoices(wish, member);
+                        //if (done == 0) {
+                            //System.out.println("Item Added");
+                        //} else if (done == 1) {
+                           //System.out.println("Item Added to Waitlist");
+                        //} else {
+                            //System.out.println("Unexpected Input");
+                        }
+                        break;
+                    }
+            }
+        }
+
     public void printInvoices() {
         System.out.println("printInvoices");
     }
