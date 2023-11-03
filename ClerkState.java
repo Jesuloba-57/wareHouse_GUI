@@ -1,7 +1,6 @@
 import java.util.*;
 import java.text.*;
 import java.io.*;
-
 public class ClerkState extends WarehouseState {
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
@@ -100,64 +99,19 @@ public class ClerkState extends WarehouseState {
     }
 
     public void addMember() {
-        String name = getToken("Enter the member's name:");
-        String address = getToken("Enter the member's address:");
-        String phone = getToken("Enter the member's phone number");
-
-        Member newMember = new Member(name, address, phone);
-        if (MemberList.instance().insertMember(newMember)) {
-            System.out.println("Member added successfully.");
-        } else {
-            System.out.println("Failed to add the member. Member may already exist.");
-        }
+        System.out.println("Add member");
     }
 
     public void addProduct() {
-        String name = getToken("Enter the product name:");
-        float price = Float.parseFloat(getToken("Enter the product price:"));
-        int quantity = Integer.parseInt(getToken("Enter the product quantity:"));
-
-        Product newProduct = new Product(name, quantity, price);
-        if (Catalog.instance().insertProduct(newProduct)) {
-            System.out.println("Product added to the catalog successfully.");
-        } else {
-            System.out.println("Failed to add the product. Product may already exist.");
-        }
+        System.out.println("Product");
 
     }
 
     public void printCatalog() {
-        System.out.println("Product Catalog:");
-        Iterator<Product> productIterator = Catalog.instance().getProducts();
-        while (productIterator.hasNext()) {
-            Product product = productIterator.next();
-            System.out.println("Product ID: " + product.getId());
-            System.out.println("Name: " + product.getProductName());
-            System.out.println("Price: $" + product.getPrice());
-            System.out.println("Quantity: " + product.getQuantity());
-            System.out.println("----------------------------");
-        }
+        System.out.println("Catalog");
     }
     public void SaveDatabase(){
-          try {
-        // Serialize MemberList
-        FileOutputStream memberListFile = new FileOutputStream("MemberList.ser");
-        ObjectOutputStream memberListOut = new ObjectOutputStream(memberListFile);
-        memberListOut.writeObject(MemberList.instance());
-        memberListOut.close();
-        memberListFile.close();
-
-        // Serialize Catalog
-        FileOutputStream catalogFile = new FileOutputStream("Catalog.ser");
-        ObjectOutputStream catalogOut = new ObjectOutputStream(catalogFile);
-        catalogOut.writeObject(Catalog.instance());
-        catalogOut.close();
-        catalogFile.close();
-
-        System.out.println("Database saved successfully.");
-    } catch (IOException e) {
-        System.out.println("Error saving the database: " + e.getMessage());
-    }
+        System.out.println("SaveDatabase");
     }
 
 
