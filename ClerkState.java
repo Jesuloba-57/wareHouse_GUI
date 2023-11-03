@@ -1,6 +1,7 @@
 import java.util.*;
 import java.text.*;
 import java.io.*;
+
 public class ClerkState extends WarehouseState {
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
@@ -138,7 +139,25 @@ public class ClerkState extends WarehouseState {
         }
     }
     public void SaveDatabase(){
-        System.out.println("SaveDatabase");
+          try {
+        // Serialize MemberList
+        FileOutputStream memberListFile = new FileOutputStream("MemberList.ser");
+        ObjectOutputStream memberListOut = new ObjectOutputStream(memberListFile);
+        memberListOut.writeObject(MemberList.instance());
+        memberListOut.close();
+        memberListFile.close();
+
+        // Serialize Catalog
+        FileOutputStream catalogFile = new FileOutputStream("Catalog.ser");
+        ObjectOutputStream catalogOut = new ObjectOutputStream(catalogFile);
+        catalogOut.writeObject(Catalog.instance());
+        catalogOut.close();
+        catalogFile.close();
+
+        System.out.println("Database saved successfully.");
+    } catch (IOException e) {
+        System.out.println("Error saving the database: " + e.getMessage());
+    }
     }
 
 
