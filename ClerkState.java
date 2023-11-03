@@ -99,16 +99,43 @@ public class ClerkState extends WarehouseState {
     }
 
     public void addMember() {
-        System.out.println("Add member");
+        String name = getToken("Enter the member's name:");
+        String address = getToken("Enter the member's address:");
+        String phone = getToken("Enter the member's phone number");
+
+        Member newMember = new Member(name, address, phone);
+        if (MemberList.instance().insertMember(newMember)) {
+            System.out.println("Member added successfully.");
+        } else {
+            System.out.println("Failed to add the member. Member may already exist.");
+        }
     }
 
     public void addProduct() {
-        System.out.println("Product");
+        String name = getToken("Enter the product name:");
+        float price = Float.parseFloat(getToken("Enter the product price:"));
+        int quantity = Integer.parseInt(getToken("Enter the product quantity:"));
+
+        Product newProduct = new Product(name, quantity, price);
+        if (Catalog.instance().insertProduct(newProduct)) {
+            System.out.println("Product added to the catalog successfully.");
+        } else {
+            System.out.println("Failed to add the product. Product may already exist.");
+        }
 
     }
 
     public void printCatalog() {
-        System.out.println("Catalog");
+        System.out.println("Product Catalog:");
+        Iterator<Product> productIterator = Catalog.instance().getProducts();
+        while (productIterator.hasNext()) {
+            Product product = productIterator.next();
+            System.out.println("Product ID: " + product.getId());
+            System.out.println("Name: " + product.getProductName());
+            System.out.println("Price: $" + product.getPrice());
+            System.out.println("Quantity: " + product.getQuantity());
+            System.out.println("----------------------------");
+        }
     }
     public void SaveDatabase(){
         System.out.println("SaveDatabase");
