@@ -26,7 +26,7 @@ public class LoginState extends WarehouseState{
         do {
             try {
                 int value = Integer.parseInt(getToken("Enter command:" ));
-                if (value <= EXIT && value >= CLERK_LOGIN) {
+                if (value <= EXIT && value >= MANAGER_LOGIN) {
                     return value;
                 }
             } catch (NumberFormatException nfe) {
@@ -129,7 +129,8 @@ public class LoginState extends WarehouseState{
                 "input 2 to login as Client\n" +
                 "Input 3 to exit the system\n");
         while ((command = getCommand()) != EXIT) {
-
+                System.out.println("Command entered: " + command);
+                System.out.println("Manager_Login integer: " + MANAGER_LOGIN);
             switch (command) {
                 case CLERK_LOGIN:       clerk();
                     break;
