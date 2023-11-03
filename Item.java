@@ -5,11 +5,13 @@ public class Item implements Serializable {
     private Product product;
     private Member member;
     private int quantity;
+    private float price;
 
-    public Item(Product product, Member member, int quantity) {
+    public Item(Product product, Member member, int quantity, float price) {
         this.product = product;
         this.member = member;
         this.quantity = quantity;
+        this.price = price;
     }
 
     public Product getProduct() {
@@ -23,6 +25,8 @@ public class Item implements Serializable {
     public int getQuantity() {
         return quantity;
     }
+
+    public float getPrice(){ return price;}
     public void setQuantity(int x){
         quantity = x;
     }
@@ -43,6 +47,6 @@ public class Item implements Serializable {
     }
 
     public String toString() {
-        return "Product Name: " + product.getProductName() + " Member: " + member.getName() + " Quantity: " + quantity;
+        return "Product Name: " + product.getProductName() + " Member: " + member.getName() + " Quantity: " + quantity + " Price: $" + price;
     }
 }

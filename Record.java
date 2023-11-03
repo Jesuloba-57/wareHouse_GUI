@@ -5,11 +5,13 @@ public class Record implements Serializable {
     private Product product;
     private Member member;
     private int quantity;
+    private float price;
 
-    public Record(Product product, Member member, int quantity) {
+    public Record(Product product, Member member, int quantity, float price) {
         this.product = product;
         this.member = member;
         this.quantity = quantity;
+        this.price = price;
     }
 
     public Product getProduct() {
@@ -18,6 +20,9 @@ public class Record implements Serializable {
 
     public Member getMember() {
         return member;
+    }
+    public float getPrice(){
+        return price;
     }
 
     public int getQuantity() {
@@ -43,6 +48,6 @@ public class Record implements Serializable {
     }
 
     public String toString() {
-        return "Product Name: " + product.getProductName() + " Member: " + member.getName() + " Quantity: " + quantity;
+        return "Product Name: " + product.getProductName() + " Member: " + member.getName() + " Quantity: " + quantity + " Price: $" + price;
     }
 }

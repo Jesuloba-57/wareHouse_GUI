@@ -6,16 +6,19 @@ public class Member implements Serializable{
     private String id;
     private String name;
     private String address;
+    private static final String MEMBER_STRING = "M";
     private String phone;
     private Wishlist wishlist;
     private InvoiceList invoice;
 
 
-    public Member (String id, String name, String address, String phone){
-        this.id =id;
+    public Member (String name, String address, String phone){
+        //this.id =id;
+
         this.name = name;
         this.address = address;
         this.phone = phone;
+        id = MEMBER_STRING + (MemberIdServer.instance()).getId();
         this.wishlist = new Wishlist();
         this.invoice = new InvoiceList();
 

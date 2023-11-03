@@ -36,6 +36,16 @@ public class MemberList implements Serializable {
         return null;
     }
 
+    public Member search(String memberId) {
+        for (Iterator iterator = members.iterator(); iterator.hasNext(); ) {
+            Member member = (Member) iterator.next();
+            if (member.getId().equals(memberId)) {
+                return member;
+            }
+        }
+        return null;
+    }
+
 
     private void writeObject(java.io.ObjectOutputStream output) {
         try {

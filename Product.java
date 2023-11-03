@@ -6,15 +6,19 @@ import java.io.Serializable.*;
 public class Product implements Serializable {
 
     public String ProductName;
-    public String id;
+    private String id;
+    private static final String PRODUCT_STRING = "P";
     public int Quantity;
+    public float Price;
     private Waitlist waitlist;
 
 
-    public Product(String ProductName, String id, int Quantity) {
+    public Product(String ProductName, int Quantity, float Price) {
         this.ProductName = ProductName;
         this.Quantity = Quantity;
-        this.id = id;
+
+        this.Price = Price;
+        id = PRODUCT_STRING + (ProductIdServer.instance()).getId();
         this.waitlist = new Waitlist();
     }
 
@@ -28,6 +32,14 @@ public class Product implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    public float getPrice(){
+        return Price;
+    }
+
+    public void setPrice(float newPrice){
+        Price = newPrice;
     }
 
     public void setQuantity(int newQuantity){
@@ -56,7 +68,7 @@ public class Product implements Serializable {
     }
 
     public String toString() {
-        return "Product Name: " + ProductName + " Id: " + id + " Quantity " + Quantity;
+        return "Product Name: " + ProductName + " Id: " + id + " Quantity " + Quantity + " Price: $" + Price;
     }
 
 }
