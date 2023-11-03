@@ -27,10 +27,10 @@ public class Wishlist implements Serializable {
     }
 
     public boolean removeFromWishlist(Record wish) {
-        System.out.println("Items before removal: " + wishes);
-        System.out.println("Item that is trying to be removed: " + wish);
+        //System.out.println("Items before removal: " + wishes);
+        //System.out.println("Item that is trying to be removed: " + wish);
         boolean removed = wishes.remove(wish);
-        System.out.println("Item removed: " + removed);
+        //System.out.println("Item removed: " + removed);
         return removed;
     }
 

@@ -61,14 +61,18 @@ public class Warehouse implements Serializable{
         return false; // Product not found
     }
 
+    public Member searchMembership(String memberId) {
+        return memberList.search(memberId);
+    }
+
     public Member findMemberByName(String memberName) {
         return memberList.findMember(memberName);
     }
 
 
 
-    public Product addProduct(String ProductName, String id, int Quantity) {
-        Product product = new Product(ProductName, id, Quantity);
+    public Product addProduct(String ProductName, int Quantity, float Price) {
+        Product product = new Product(ProductName, Quantity, Price);
 
         if (catalog.insertProduct(product)) {
             return (product);
@@ -90,8 +94,8 @@ public class Warehouse implements Serializable{
         return false;
     }
 
-    public Member addMember(String id, String name, String address, String phone) {
-        Member member = new Member(id, name, address, phone);
+    public Member addMember(String name, String address, String phone) {
+        Member member = new Member(name, address, phone);
         if (memberList.insertMember(member)) {
             return (member);
         }
@@ -102,8 +106,8 @@ public class Warehouse implements Serializable{
         return catalog.changeProductQuantity(productName, newQuantity);
     }
 
-    public Item addWaitItem(Product product, Member member, int quantity){
-        Item item = new Item(product, member, quantity);
+    public Item addWaitItem(Product product, Member member, int quantity, float price){
+        Item item = new Item(product, member, quantity, price);
         if (product != null ) {
             if (product.addWait(item)) {
                 return (item);
@@ -143,7 +147,7 @@ public class Warehouse implements Serializable{
         else{
             int quantity = wish.getQuantity() - p.getQuantity();
             p.setQuantity(0);
-            Item wait = new Item(p, member, quantity);
+            Item wait = new Item(p, member, quantity, wish.getPrice());
             //member.addtoInvoice(wish);
             p.addWait(wait);
             return 1;

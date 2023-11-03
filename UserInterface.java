@@ -36,6 +36,7 @@ public class UserInterface {
             warehouse = Warehouse.instance();
         }
     }
+
     public static UserInterface instance() {
         if (userInterface == null) {
             return userInterface = new UserInterface();
@@ -43,12 +44,13 @@ public class UserInterface {
             return userInterface;
         }
     }
+
     public String getToken(String prompt) {
         do {
             try {
                 System.out.println(prompt);
                 String line = reader.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(line,"\n\r\f");
+                StringTokenizer tokenizer = new StringTokenizer(line, "\n\r\f");
                 if (tokenizer.hasMoreTokens()) {
                     return tokenizer.nextToken();
                 }
@@ -57,6 +59,7 @@ public class UserInterface {
             }
         } while (true);
     }
+
     private boolean yesOrNo(String prompt) {
         String more = getToken(prompt + " (Y|y)[es] or anything else for no");
         if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
@@ -64,6 +67,7 @@ public class UserInterface {
         }
         return true;
     }
+
     public int getNumber(String prompt) {
         do {
             try {
@@ -75,6 +79,7 @@ public class UserInterface {
             }
         } while (true);
     }
+
     public Calendar getDate(String prompt) {
         do {
             try {
@@ -88,6 +93,7 @@ public class UserInterface {
             }
         } while (true);
     }
+
     public int getCommand() {
         do {
             try {
@@ -135,9 +141,9 @@ public class UserInterface {
         String name = getToken("Enter member name");
         String address = getToken("Enter address");
         String phone = getToken("Enter phone");
-        String id = getToken("Enter id");
+
         Member result;
-        result = warehouse.addMember(id, name,address, phone);
+        result = warehouse.addMember(name, address, phone);
         if (result == null) {
             System.out.println("Could not add member");
         }
@@ -152,10 +158,13 @@ public class UserInterface {
             System.out.println("Enter Quantity");
 
             int Quantity = myObj.nextInt();
-            String id = getToken("Enter id");
-            result = warehouse.addProduct(ProductName, id, Quantity);
+
+            System.out.println("Enter Price");
+            float Price = myObj.nextFloat();
+            //String id = getToken("Enter id");
+            result = warehouse.addProduct(ProductName, Quantity, Price);
             if (result != null) {
-            System.out.println(result);
+                System.out.println(result);
             } else {
                 System.out.println("Product could not be added");
             }
@@ -176,8 +185,8 @@ public class UserInterface {
             String name = getToken("Enter Member name: ");
             Product product = warehouse.findProductByName(ProductName);
             Member member = warehouse.findMemberByName(name);
-
-            result = warehouse.addWaitItem(product, member, Quantity);
+            float price = product.getPrice();
+            result = warehouse.addWaitItem(product, member, Quantity, price);
             if (result != null) {
                 System.out.println(result);
             } else {
@@ -213,7 +222,7 @@ public class UserInterface {
         System.out.println("3. Change item quantity and add to Invoice");
 
         while (wishIter.hasNext()) {
-            Record wish = (Record)(wishIter.next());
+            Record wish = (Record) (wishIter.next());
             System.out.println(wish.toString());
             int choice = getNumber("Enter your choice:");
             switch (choice) {
@@ -229,7 +238,7 @@ public class UserInterface {
 
                 case 2:
                     if (member != null) {
-                        Record record = new Record(wish.getProduct(), member, wish.getQuantity());
+                        Record record = new Record(wish.getProduct(), member, wish.getQuantity(), wish.getPrice());
                         boolean removed = warehouse.removeFromWishlist(member, record);
                         if (removed) {
                             System.out.println("Item removed from the wishlist.");
@@ -261,7 +270,7 @@ public class UserInterface {
     }
 
 
-    public void editWishlist(Wishlist wishlist) {
+    /*public void editWishlist(Wishlist wishlist) {
         boolean continueEditing = true;
 
         while (continueEditing) {
@@ -324,13 +333,13 @@ public class UserInterface {
                     break;
             }
         }
-    }
+    }*/
 
-    public void showWaitlist(){
+    public void showWaitlist() {
         String name = getToken("Enter Product Name: ");
         Product product = warehouse.findProductByName(name);
-        if(product != null) {
-            if (product.isEmpty()){
+        if (product != null) {
+            if (product.isEmpty()) {
                 System.out.println("Product does not have a waitlist");
             }
             Iterator allItems = warehouse.getWaitlist(product);
@@ -339,23 +348,23 @@ public class UserInterface {
                 System.out.println(item.toString());
             }
         }
-        if(product == null){
+        if (product == null) {
             System.out.println("Product entered does not exist in catalog");
         }
     }
 
     public void showProducts() {
         Iterator allProducts = warehouse.getProducts();
-        while (allProducts.hasNext()){
-            Product product = (Product)(allProducts.next());
+        while (allProducts.hasNext()) {
+            Product product = (Product) (allProducts.next());
             System.out.println(product.toString());
         }
     }
 
     public void showMembers() {
         Iterator allMembers = warehouse.getMembers();
-        while (allMembers.hasNext()){
-            Member member = (Member)(allMembers.next());
+        while (allMembers.hasNext()) {
+            Member member = (Member) (allMembers.next());
             System.out.println(member.toString());
         }
     }
@@ -367,9 +376,9 @@ public class UserInterface {
 
         Product product = warehouse.findProductByName(productName);
         Member member = warehouse.findMemberByName(memberName);
-
+        float price = product.getPrice();
         if (product != null && member != null) {
-            Record record = new Record(product, member, quantity);
+            Record record = new Record(product, member, quantity, price);
             boolean added = warehouse.addToWishlist(member, record);
 
             if (added) {
@@ -389,9 +398,9 @@ public class UserInterface {
 
         Product product = warehouse.findProductByName(productName);
         Member member = warehouse.findMemberByName(memberName);
-
+        float price = product.getPrice();
         if (product != null && member != null) {
-            Record record = new Record(product, member, quantity);
+            Record record = new Record(product, member, quantity, price);
             boolean removed = warehouse.removeFromWishlist(member, record);
 
             if (removed) {
@@ -408,7 +417,7 @@ public class UserInterface {
         String name = getToken("Enter Member Name: ");
         Member member = warehouse.findMemberByName(name);
         Iterator allItems = warehouse.getWishlist(member);
-        if (member.isEmpty()){
+        if (member.isEmpty()) {
             System.out.println("WishList is Empty");
         }
         while (allItems.hasNext()) {
@@ -437,8 +446,11 @@ public class UserInterface {
             System.out.println("Enter Quantity");
             int quantity = scanner.nextInt();
 
+            System.out.println("Enter Price");
+            float price = scanner.nextFloat();
 
-            Product product = new Product(productName, id, quantity);
+
+            Product product = new Product(productName, quantity, price);
             System.out.println(product.getProductName());
 
             if (product != null) {
@@ -477,11 +489,12 @@ public class UserInterface {
 
         Product product = warehouse.findProductByName(productName);
         Member member = warehouse.findMemberByName(memberName);
+        float price = product.getPrice();
         System.out.println(product.getProductName());
         System.out.println(member.getName());
         if (product != null && member != null) {
             //Item item = new Item(product, member, 0); // Quantity is not needed for removal
-            Item item = new Item(product, member, quantity);
+            Item item = new Item(product, member, quantity, price);
             boolean removed = warehouse.removeWaitItem(item, product);
             if (removed) {
                 System.out.println("Item removed from the waitlist.");
@@ -492,7 +505,6 @@ public class UserInterface {
             System.out.println("Product or member not found.");
         }
     }
-
 
 
     public void showInvoices() {
@@ -506,16 +518,15 @@ public class UserInterface {
     }
 
 
-
     public void processWaitlistHold() {
         System.out.println("Dummy Action");
     }
 
-    public void processShipment(){
+    public void processShipment() {
         String name = getToken("Enter Shipment Product Name: ");
         Product product = warehouse.findProductByName(name);
         int quantity = getNumber("Enter quantity of Product: ");
-        if (product != null && !product.isEmpty()){
+        if (product != null && !product.isEmpty()) {
             Shipment ship = new Shipment(product, quantity);
             System.out.println(ship.toString());
             Iterator waitIter = warehouse.getWaitlist(product);
@@ -526,10 +537,11 @@ public class UserInterface {
             System.out.println("3. Change item quantity and add to Member Invoice: ");
 
             while (waitIter.hasNext()) {
-                Item wait = (Item)(waitIter.next());
+                Item wait = (Item) (waitIter.next());
                 Member member = wait.getMember();
                 int addQuantity = wait.getQuantity();
-                Record record = new Record(product, member, addQuantity);
+                float price = wait.getPrice();
+                Record record = new Record(product, member, addQuantity, price);
                 System.out.println(wait.toString());
                 int choice = getNumber("Enter your choice:");
                 switch (choice) {
@@ -544,7 +556,7 @@ public class UserInterface {
 
                     case 2:
                         if (member != null) {
-                            Record record1 = new Record(wait.getProduct(), member, wait.getQuantity());
+                            Record record1 = new Record(wait.getProduct(), member, wait.getQuantity(), wait.getPrice());
                             boolean removed = warehouse.removeFromWishlist(member, record1);
                             if (removed) {
                                 System.out.println("Item removed from the wishlist.");
@@ -559,7 +571,7 @@ public class UserInterface {
                     case 3:
                         if (member != null) {
                             int newQuantity = getNumber("Enter the new quantity:");
-                            Record record2 = new Record(product, member, newQuantity);
+                            Record record2 = new Record(product, member, newQuantity, wait.getPrice());
                             wait.setQuantity(newQuantity);
                             boolean success2 = warehouse.allocate(ship, newQuantity);
                             if (success2) {
@@ -578,7 +590,7 @@ public class UserInterface {
             System.out.println(ship.toString() + " has been added to catalog");
             warehouse.allocate(ship, quantity);
 
-        } else{
+        } else {
             System.out.println("Waitlist is Currently Empty");
         }
     }
@@ -586,79 +598,97 @@ public class UserInterface {
     public void getTransactions() {
         System.out.println("Dummy Action");
     }
+
     private void save() {
         if (warehouse.save()) {
-            System.out.println(" The Warehouse has been successfully saved in the file WarehouseData \n" );
+            System.out.println(" The Warehouse has been successfully saved in the file WarehouseData \n");
         } else {
-            System.out.println(" There has been an error in saving \n" );
+            System.out.println(" There has been an error in saving \n");
         }
     }
+
     private void retrieve() {
         try {
             Warehouse tempWarehouse = Warehouse.retrieve();
             if (tempWarehouse != null) {
-                System.out.println(" The Warehouse has been successfully retrieved from the file WarehouseData \n" );
+                System.out.println(" The Warehouse has been successfully retrieved from the file WarehouseData \n");
                 warehouse = tempWarehouse;
             } else {
-                System.out.println("File doesnt exist; creating new Warehouse" );
+                System.out.println("File doesnt exist; creating new Warehouse");
                 warehouse = Warehouse.instance();
             }
-        } catch(Exception cnfe) {
+        } catch (Exception cnfe) {
             cnfe.printStackTrace();
         }
     }
+
     public void process() {
         int command;
         help();
         while ((command = getCommand()) != EXIT) {
             switch (command) {
-                case ADD_MEMBER:        addMember();
+                case ADD_MEMBER:
+                    addMember();
                     break;
-                case ADD_PRODUCTS:         addProducts();
+                case ADD_PRODUCTS:
+                    addProducts();
                     break;
-                case PURCHASE_PRODUCTS:       processOrder();
+                case PURCHASE_PRODUCTS:
+                    processOrder();
                     break;
                 //case CHANGE_PRODUCT_QUANTITY:      changeProductQuantity(); //This should be a function that happens when a shipment comes in. or for when a customer wants to change their item quantity
-                    //break;
+                //break;
                 //case REMOVE_PRODUCT:      removeProduct();
-                    //break;
+                //break;
                 //case PLACE_ON_WAITLIST:       placeOnWaitlist(); //This should happen automatically if quantity ordered is greater than quantity in stock
-                    //break;
+                //break;
                 //case REMOVE_FROM_WAITLIST:        removeItemFromWaitlist(); //This should happen automatically when a shipment comes in and the waitlist is processed
-                    //break;
+                //break;
                 //case PROCESS_WAITLIST:       processWaitlistHold(); //Either keep manual, or change to happen automatically when a shipment comes in.
-                    //break;
-                case PROCESS_SHIPMENT:  processShipment();
+                //break;
+                case PROCESS_SHIPMENT:
+                    processShipment();
                     break;
-                case SAVE:              save();
+                case SAVE:
+                    save();
                     break;
-                case RETRIEVE:          retrieve();
+                case RETRIEVE:
+                    retrieve();
                     break;
-                case SHOW_MEMBERS:	showMembers();
+                case SHOW_MEMBERS:
+                    showMembers();
                     break;
-                case SHOW_PRODUCTS:	showProducts();
+                case SHOW_PRODUCTS:
+                    showProducts();
                     break;
-                case SHOW_ITEMS: showWaitlist();
+                case SHOW_ITEMS:
+                    showWaitlist();
                     break;
-                case ADD_TO_WISHLIST: addToWishlist();
+                case ADD_TO_WISHLIST:
+                    addToWishlist();
                     break;
-                case REMOVE_FROM_WISHLIST: removeFromWishlist();
+                case REMOVE_FROM_WISHLIST:
+                    removeFromWishlist();
                     break;
-                case SHOW_INVOICES: showInvoices();
+                case SHOW_INVOICES:
+                    showInvoices();
                     break;
-                case SHOW_WISHLIST: showWishlist();
+                case SHOW_WISHLIST:
+                    showWishlist();
                     break;
-                case HELP:              help();
+                case HELP:
+                    help();
                     break;
             }
         }
     }
+
     public static void main(String[] s) {
-        Scanner scanner = new Scanner(System.in);
+        /*Scanner scanner = new Scanner(System.in);
         System.out.println("1. Login");
         System.out.println("2. Create new User");
         int choice = scanner.nextInt();
-        switch(choice){
+        switch (choice) {
             case 1:
                 System.out.println("Enter Username: ");
                 String name = scanner.nextLine();
@@ -671,9 +701,12 @@ public class UserInterface {
             case 2:
                 System.out.println("Enter Username: ");
 
-
-        //UserInterface.instance().process();
+*/
+        {
+            UserInterface.instance().process();
+        }
     }
+
 }
 
 
