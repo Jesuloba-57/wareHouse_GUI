@@ -122,7 +122,7 @@ public class ClerkState extends WarehouseState {
         String userID = getToken("Please input the user id: ");
         if (Warehouse.instance().searchMembership(userID) != null){
             (WarehouseContext.instance()).setUser(userID);
-            (WarehouseContext.instance()).changeState(1);
+            (WarehouseContext.instance()).changeState(2);
         }
         else
             System.out.println("Invalid user id.");
@@ -130,7 +130,7 @@ public class ClerkState extends WarehouseState {
 
     public void logout()
     {
-        (WarehouseContext.instance()).changeState(0); // exit with a code 0
+        (WarehouseContext.instance()).changeState(3); // exit with a code 0
     }
 
 

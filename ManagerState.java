@@ -105,8 +105,17 @@ public class ManagerState extends WarehouseState {
         System.out.println("freeze/unfreeze client");
     }
     public void becomeSalesclerk(){
-        System.out.println("become salesclerk");
+        String userID = getToken("Please input the manager password: ");
+        if (userID.equals("manager")){
+            (WarehouseContext.instance()).setUser(userID);
+            (WarehouseContext.instance()).changeState(1);
+        }
+        else{
+            System.out.println("Invalid user id.");
+        }
     }
+
+
 
 
 

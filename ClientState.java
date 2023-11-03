@@ -73,6 +73,7 @@ public class ClientState extends WarehouseState {
 
     public void viewAccount(){
         System.out.println("View Account");
+
     }
     public void checkPrice(){
         System.out.println("check Price");
