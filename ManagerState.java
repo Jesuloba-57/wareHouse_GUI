@@ -10,9 +10,9 @@ public class ManagerState extends WarehouseState {
     private static final int MODIFY_PRODUCT_PRICE = 1;
     private static final int RECEIVE_SHIPMENT = 2;
     private static final int FREEZE_UNFREEZE_CLIENT = 3;
-    private static final int BECOME_SALESCLERK = 11;
-    private static final int LOGOUT = 12;
-    private static final int HELP = 13;
+    private static final int BECOME_SALESCLERK = 4;
+    private static final int LOGOUT = 5;
+    private static final int HELP = 6;
     private ManagerState() {
         super();
         warehouse = Warehouse.instance();
@@ -85,8 +85,8 @@ public class ManagerState extends WarehouseState {
     }
 
     public void help() {
-        System.out.println("Enter a number between 0 and 12 as explained below:");
-        System.out.println(EXIT + " to Exit\n");
+        System.out.println("Enter a number between 1 and 7 as explained below:");
+//        System.out.println(EXIT + " to Exit\n");
         System.out.println(MODIFY_PRODUCT_PRICE + " to modify product price");
         System.out.println(RECEIVE_SHIPMENT + " to receive a shipment");
         System.out.println(FREEZE_UNFREEZE_CLIENT + " to freeze/unfreeze client account ");

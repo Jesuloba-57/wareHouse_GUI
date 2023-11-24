@@ -8,14 +8,16 @@ public class ClerkState extends WarehouseState {
     private WarehouseContext context;
     private static ClerkState instance;
     private static final int EXIT = 0;
-    private static final int PRINT_CATALOG = 1;
+    private static final int PRINT_CATALOG = 2;
+    private static final int QUERY = 3;
+    private static final int ACCEPT_PAY = 4;
 
-    private static final int ADD_MEMBER = 2;
-    private static final int ADD_PRODUCT= 3;
-    private static final int SAVE_DATABASE = 4;
-    private static final int LOGOUT = 5;
-    private static final int CLIENT_MENU = 11;
-    private static final int HELP = 13;
+    private static final int ADD_MEMBER = 1;
+//    private static final int ADD_PRODUCT= 3;
+    private static final int SAVE_DATABASE = 6;
+    private static final int LOGOUT = 7;
+    private static final int CLIENT_MENU = 5;
+    private static final int HELP = 8;
     private ClerkState() {
         super();
         warehouse = Warehouse.instance();
@@ -77,7 +79,7 @@ public class ClerkState extends WarehouseState {
     public int getCommand() {
         do {
             try {
-                int value = Integer.parseInt(getToken("Enter command:" + HELP + " for help"));
+                int value = Integer.parseInt(getToken("Enter command(" + HELP + " for help):"));
                 if (value >= EXIT && value <= HELP) {
                     return value;
                 }
@@ -88,14 +90,16 @@ public class ClerkState extends WarehouseState {
     }
 
     public void help() {
-        System.out.println("Enter a number between 0 and 12 as explained below:");
-        System.out.println(EXIT + " to Exit\n");
+        System.out.println("Enter a number between 1 and 8 as explained below:");
+//        System.out.println(EXIT + " to Exit\n");
         System.out.println(ADD_MEMBER + " to add a member");
-        System.out.println(ADD_PRODUCT + " to  add products to catalog");
         System.out.println(PRINT_CATALOG + " to display products in catalog ");
+//        System.out.println(ADD_PRODUCT + " to  add products to catalog");
+        System.out.println(QUERY + " for Client Viewing Options");
+        System.out.println(ACCEPT_PAY + " to accept Payment from a client");
+        System.out.println(CLIENT_MENU+ " to become a client");
         System.out.println(SAVE_DATABASE + " to save the database");
         System.out.println(LOGOUT + " to Logout");
-        System.out.println(CLIENT_MENU+ " to become a client");
         System.out.println(HELP + " for help");
     }
 
@@ -160,8 +164,13 @@ public class ClerkState extends WarehouseState {
     }
     }
 
+    public void queryClient(){
+        (WarehouseContext.instance()).changeState(5);
+    }
 
-
+    public void acceptPay(){
+        System.out.println("Dummy Function");
+    }
 
     public void clientMenu()
     {
@@ -176,24 +185,32 @@ public class ClerkState extends WarehouseState {
 
     public void logout()
     {
-        (WarehouseContext.instance()).changeState(3); // exit with a code 0
+        if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk)
+        { //stem.out.println(" going to clerk \n ");
+            (WarehouseContext.instance()).changeState(3); // exit with a code 1
+        }
+        else
+            (WarehouseContext.instance()).changeState(0); // exit code 2, indicates error
     }
 
 
     public void process() {
+
         int command;
         help();
         while ((command = getCommand()) != EXIT) {
             switch (command) {
                 case ADD_MEMBER:        addMember();
                     break;
-                case ADD_PRODUCT:         addProduct();
+                case ACCEPT_PAY:         acceptPay();
                     break;
                 case PRINT_CATALOG:      printCatalog();
                     break;
                 case SAVE_DATABASE:      SaveDatabase();
                     break;
                 case LOGOUT:      logout();
+                    break;
+                case QUERY:              queryClient();
                     break;
                 case CLIENT_MENU:          clientMenu();
                     break;

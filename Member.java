@@ -40,6 +40,10 @@ public class Member implements Serializable{
     public boolean addwish(Record rec){
         return wishlist.addToWishlist(rec);
     }
+
+//    public Record findWish(Product product){
+//        return wishlist.findWish(product);
+//    }
     public Iterator getInvoice(){
         return invoice.getInvoices();
     }

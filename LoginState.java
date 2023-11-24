@@ -81,7 +81,7 @@ public class LoginState extends WarehouseState{
 
     private void clerk(){
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("Logging in as Clerk");
         System.out.println("Enter UserName: ");
         String userName = scanner.nextLine();
         System.out.println("Enter Password: ");
@@ -94,10 +94,9 @@ public class LoginState extends WarehouseState{
             System.out.println("Invalid Username or password");
         }
     }
-
     private void manager(){
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("Logging In as Manager");
         System.out.println("Enter UserName: ");
         String userName = scanner.nextLine();
         System.out.println("Enter Password: ");
@@ -112,14 +111,14 @@ public class LoginState extends WarehouseState{
     }
 
     private void user(){
-        String userID = getToken("Please input the user id: ");
-        if (Warehouse.instance().searchMembership(userID) != null){
-            (WarehouseContext.instance()).setLogin(WarehouseContext.IsClient);
-            (WarehouseContext.instance()).setUser(userID);
+//        String userID = getToken("Please input the user id: ");
+//        if (Warehouse.instance().searchMembership(userID) != null){
+//            (WarehouseContext.instance()).setLogin(WarehouseContext.IsClient);
+//            (WarehouseContext.instance()).setUser(userID);
             (WarehouseContext.instance()).changeState(2);
-        }
-        else
-            System.out.println("Invalid user id.");
+//        }
+//        else
+//            System.out.println("Invalid user id.");
     }
 
     public void process() {
@@ -129,8 +128,8 @@ public class LoginState extends WarehouseState{
                 "input 2 to login as Client\n" +
                 "Input 3 to exit the system\n");
         while ((command = getCommand()) != EXIT) {
-                System.out.println("Command entered: " + command);
-                System.out.println("Manager_Login integer: " + MANAGER_LOGIN);
+//                System.out.println("Command entered: " + command);
+//                System.out.println("Manager_Login integer: " + MANAGER_LOGIN);
             switch (command) {
                 case CLERK_LOGIN:       clerk();
                     break;

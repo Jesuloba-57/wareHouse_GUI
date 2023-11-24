@@ -36,7 +36,7 @@ public class MemberList implements Serializable {
         return null;
     }
 
-    public Member search(String memberId) {
+    public Member search(String memberId){
         for (Iterator iterator = members.iterator(); iterator.hasNext(); ) {
             Member member = (Member) iterator.next();
             if (member.getId().equals(memberId)) {

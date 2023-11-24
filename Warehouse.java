@@ -165,6 +165,9 @@ public class Warehouse implements Serializable{
     public Iterator getProducts() { return catalog.getProducts();}
 
     //public String getMemberInfo() { return member.}
+//    public Record findWish(Member member, Product product){
+//        return member.findWish(product);
+//    }
 
     public Iterator getMembers() {
         return memberList.getMembers();
@@ -187,7 +190,7 @@ public class Warehouse implements Serializable{
         return false;
     }
 
-    public static Warehouse retrieve() {
+    public static Warehouse  retrieve() {
         try {
 //            Scanner keyboard = new Scanner(System.in);
 //            System.out.println("filename");
