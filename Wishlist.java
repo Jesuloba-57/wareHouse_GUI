@@ -33,6 +33,9 @@ public class Wishlist implements Serializable {
         //System.out.println("Item removed: " + removed);
         return removed;
     }
+    public void emptyWishlist(){
+        wishes.clear();
+    }
 
     public Iterator getWishlist() {
         return copyList.getList();

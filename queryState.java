@@ -1,10 +1,9 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
-public class QueryState extends WarehouseState{
+public class QueryState extends WarehouseState {
     private static final int EXIT = 0;
     private static final int VIEW_CLIENTS = 1;
     private static final int N_CLIENTS = 2;
@@ -12,26 +11,11 @@ public class QueryState extends WarehouseState{
     private static final int HELP = 4;
 
     private static QueryState queryState;
-    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    private JFrame frame;
     private static Warehouse warehouse;
 
     private QueryState() {
         warehouse = Warehouse.instance();
-    }
-
-    public String getToken(String prompt) {
-        do {
-            try {
-                System.out.println(prompt);
-                String line = reader.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(line,"\n\r\f");
-                if (tokenizer.hasMoreTokens()) {
-                    return tokenizer.nextToken();
-                }
-            } catch (IOException ioe) {
-                System.exit(0);
-            }
-        } while (true);
     }
 
     public static QueryState instance() {
@@ -41,68 +25,75 @@ public class QueryState extends WarehouseState{
             return queryState;
         }
     }
-    public void help() {
-        System.out.println("\nEnter a number between 0 and 7 as explained below:");
-        System.out.println(EXIT + " to Exit ");
-        System.out.println(VIEW_CLIENTS + " to view All Clients");
-        System.out.println(N_CLIENTS + " to Views Clients with outstanding balances");
-        System.out.println(P_CLIENTS + " to Views Clients without outstanding balances");
-        System.out.println(HELP + " for help");
-    }
-    public int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(getToken("Enter command:" + HELP + " for help"));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
+
+    private void createAndShowGUI() {
+        frame = new JFrame("Query State");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLayout(new GridLayout(5, 1));
+
+        addButton("Exit", e -> exit());
+        addButton("View All Clients", e -> viewClients());
+        addButton("View Clients with Outstanding Balances", e -> viewClientsWithOutstandingBalances());
+        addButton("View Clients without Outstanding Balances", e -> viewClientsWithoutOutstandingBalances());
+        addButton("Help", e -> help());
+
+        frame.pack();
+        frame.setVisible(true);
+        frame.setLocation(400, 400);
     }
 
-    public void process() {
-        int command;
-//        String Name = getToken("Enter Client Name: ");
-//        Member member = warehouse.findMemberByName(Name);
-//        Iterator wishIter = warehouse.getWishlist(member);
-//
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
+    private void addButton(String label, ActionListener actionListener) {
+        JButton button = new JButton(label);
+        button.addActionListener(actionListener);
+        frame.add(button);
+    }
 
-                case EXIT:
-                    exit();
-                    break;
-                case VIEW_CLIENTS:
-                    viewClients();
-                    break;
-//                case N_CLIENTS:
-//                    removeProduct(member);
-//                    break;
-//                case P_CLIENTS:
-//                    changeQty(member);
-//                    break;
-                case HELP:
-                    help();
-                    break;
-            }
-        }
-    }
-    public void run() {
-        process();
-    }
-    public void exit(){
-        System.out.println("Returning to Clerk Menu");
+    private void exit() {
+        JOptionPane.showMessageDialog(frame, "Returning to Clerk Menu");
         (WarehouseContext.instance()).changeState(1);
+        frame.dispose(); // Close the Query State window
     }
 
-    public void viewClients(){
+    private void viewClients() {
+        StringBuilder clientInfo = new StringBuilder("All Clients:\n");
         Iterator allMembers = warehouse.getMembers();
         while (allMembers.hasNext()) {
             Member member = (Member) (allMembers.next());
-            System.out.println(member.toString());
+            clientInfo.append(member.toString()).append("\n");
         }
+        JOptionPane.showMessageDialog(frame, clientInfo.toString());
+    }
+
+    private void viewClientsWithOutstandingBalances() {
+        // Implement logic to view clients with outstanding balances
+        JOptionPane.showMessageDialog(frame, "View Clients with Outstanding Balances - To be implemented");
+    }
+
+    private void viewClientsWithoutOutstandingBalances() {
+        // Implement logic to view clients without outstanding balances
+        JOptionPane.showMessageDialog(frame, "View Clients without Outstanding Balances - To be implemented");
+    }
+
+    private void help() {
+        StringBuilder message = new StringBuilder("\nEnter a number between 0 and 4 as explained below:\n");
+        message.append(EXIT).append(" to Exit\n");
+        message.append(VIEW_CLIENTS).append(" to view All Clients\n");
+        message.append(N_CLIENTS).append(" to Views Clients with outstanding balances\n");
+        message.append(P_CLIENTS).append(" to Views Clients without outstanding balances\n");
+        message.append(HELP).append(" for help\n");
+        JOptionPane.showMessageDialog(frame, message.toString());
+    }
+
+    public void run() {
+        SwingUtilities.invokeLater(this::createAndShowGUI);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                QueryState.instance().run();
+            }
+        });
     }
 }

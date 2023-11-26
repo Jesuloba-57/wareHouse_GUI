@@ -2,6 +2,9 @@ import javax.crypto.spec.RC2ParameterSpec;
 import java.util.*;
 import java.text.*;
 import java.io.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class ShoppingState extends WarehouseState{
     private static ShoppingState shopping;
@@ -14,6 +17,52 @@ public class ShoppingState extends WarehouseState{
     private static final int CHANGE_QTY = 3;
     private static final int CHECKOUT = 6;
     private static final int HELP = 7;
+    private JFrame frame;
+
+    private void createAndShowGUI() {
+        frame = new JFrame("Shopping State");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLayout(new GridLayout(6, 1));
+        String username = JOptionPane.showInputDialog(frame, "Enter Member name:");
+        if (!login(username)) {
+            // User canceled or entered invalid credentials, terminate
+            return;
+        }
+        Member member = warehouse.findMemberByName(username);
+
+        addButton("View Cart", e -> viewCart(member));
+        addButton("Add Product", e -> addProduct(member));
+        addButton("Remove Product", e -> removeProduct(member));
+        addButton("Change Quantity", e -> changeQty(member));
+        addButton("Checkout", e -> checkout(member));
+        addButton("Help", e -> help());
+
+        //frame.pack();
+        frame.setSize(400,400);
+        frame.setLocation(400, 400);
+        frame.setVisible(true);
+    }
+
+    private boolean login(String username) {
+        Member member = warehouse.findMemberByName(username);
+        if (username == null) {
+            // User clicked Cancel, terminate
+            return false;
+        }
+        else if (member != null){
+            return true;
+        }
+        else {
+            JOptionPane.showMessageDialog(frame, "Invalid manager credentials!");
+            return false;
+        }
+    }
+
+    private void addButton(String label, ActionListener actionListener) {
+        JButton button = new JButton(label);
+        button.addActionListener(actionListener);
+        frame.add(button);
+    }
 
     public static ShoppingState instance() {
         if (shopping == null) {
@@ -27,28 +76,7 @@ public class ShoppingState extends WarehouseState{
         warehouse = Warehouse.instance();
     }
     public void process() {
-        int command;
-        String Name = getToken("Enter Client Name: ");
-        Member member = warehouse.findMemberByName(Name);
-        Iterator wishIter = warehouse.getWishlist(member);
-
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
-                case ADD_PRODUCT:       addProduct(member);
-                    break;
-                case REMOVE_PRODUCT:        removeProduct(member);
-                    break;
-                case CHANGE_QTY:       changeQty(member);
-                    break;
-                case VIEW_CART:       viewCart(member);
-                    break;
-                case CHECKOUT:  checkout(member);
-                    break;
-                case HELP:              help();
-                    break;
-            }
-        }
+        SwingUtilities.invokeLater(this::createAndShowGUI);
     }
 
     public void help() {
@@ -69,14 +97,23 @@ public class ShoppingState extends WarehouseState{
     public String getToken(String prompt) {
         do {
             try {
-                System.out.println(prompt);
-                String line = reader.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(line,"\n\r\f");
+                // Show a dialog to prompt the user for input
+                String userInput = JOptionPane.showInputDialog(null, prompt);
+
+                // Check if the user clicked Cancel or closed the dialog
+                if (userInput == null) {
+                    JOptionPane.showMessageDialog(null, "Input canceled. Please enter a valid value.");
+                    continue; // Go back to prompting the user
+                }
+
+                // Use StringTokenizer to tokenize the user input
+                StringTokenizer tokenizer = new StringTokenizer(userInput, "\n\r\f");
                 if (tokenizer.hasMoreTokens()) {
                     return tokenizer.nextToken();
                 }
-            } catch (IOException ioe) {
-                System.exit(0);
+            } catch (Exception e) {
+                // Handle exceptions (e.g., NumberFormatException) if needed
+                JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid value.");
             }
         } while (true);
     }
@@ -88,7 +125,7 @@ public class ShoppingState extends WarehouseState{
                 Integer num = Integer.valueOf(item);
                 return num.intValue();
             } catch (NumberFormatException nfe) {
-                System.out.println("Please input a number ");
+                JOptionPane.showMessageDialog(null, "Please input a number");
             }
         } while (true);
     }
@@ -103,37 +140,56 @@ public class ShoppingState extends WarehouseState{
 
     public void viewCart(Member member) {
         Iterator allItems = warehouse.getWishlist(member);
-        if (member.isEmpty()){
-            System.out.println("WishList is Empty");
+        StringBuilder cartContents = new StringBuilder();
+
+        if (member.isEmpty()) {
+            // Wishlist is empty
+            JOptionPane.showMessageDialog(frame, "Wishlist is Empty");
+            return;
         }
+
         while (allItems.hasNext()) {
             Record record = (Record) allItems.next();
-            System.out.println(record.toString());
+            cartContents.append(record.toString()).append("\n");
         }
+
+        // Display all records in a single JOptionPane
+        JOptionPane.showMessageDialog(frame, cartContents.toString(), "Shopping Cart", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public void addProduct(Member member){
-        String productName = getToken("Enter Product Name");
-        int quantity = getNumber("Enter Quantity");
+    public void addProduct(Member member) {
+        String productName = JOptionPane.showInputDialog(frame, "Enter Product name: ");
+        String quant = JOptionPane.showInputDialog(frame, "Enter Quantity: ");
+        int quantity = -1;
+        try {
+            // Parse the user input as an integer
+            quantity = Integer.parseInt(quant);
 
-        Product product = warehouse.findProductByName(productName);
-        //float price = product.getPrice();
-        if (product != null) {
-            Record record = new Record(product, member, quantity, product.getPrice());
-            boolean added = warehouse.addToWishlist(member, record);
-
-            if (added) {
-                System.out.println("Item added to the wishlist.");
-            } else {
-                System.out.println("Item could not be added to the wishlist.");
-            }
-        } else {
-            System.out.println("Product not found.");
+//            JOptionPane.showMessageDialog(null, "You entered: " + enteredInteger);
+        } catch (NumberFormatException e) {
+            // Handle the case where the user entered a non-integer value
+            JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid integer.");
         }
+
+            Product product = warehouse.findProductByName(productName);
+            //float price = product.getPrice();
+            if (product != null && quantity != -1) {
+                Record record = new Record(product, member, quantity, product.getPrice());
+                boolean added = warehouse.addToWishlist(member, record);
+
+                if (added) {
+                    JOptionPane.showMessageDialog(frame, "Item added to the wishlist.");
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Item could not be added to the wishlist.");
+                }
+            }
+            else {
+                JOptionPane.showMessageDialog(frame, "Product not found.");
+            }
     }
 
     public void removeProduct(Member member){
-            String productName = getToken("Enter Product Name");
+            String productName = JOptionPane.showInputDialog(frame, "Enter Product name: ");
             Product product = warehouse.findProductByName(productName);
             Iterator wishIter = warehouse.getWishlist(member);
             float price = 0; int qty = 0;
@@ -148,58 +204,94 @@ public class ShoppingState extends WarehouseState{
             Record target = new Record(product, member, qty, price);
             boolean removed = warehouse.removeFromWishlist(member, target);
             if (removed) {
-                System.out.println("Item removed from the wishlist.");
+                JOptionPane.showMessageDialog(frame, "Item removed from the wishlist.");
             } else {
-                System.out.println("Item was not found on the wishlist.");
+                JOptionPane.showMessageDialog(frame, "Item was not found on the wishlist.");
             }
     }
 
-    public void changeQty(Member member){
-            String productName = getToken("Enter Product Name");
-            Product product = warehouse.findProductByName(productName);
-            Iterator wishIter = warehouse.getWishlist(member);
-            int newQuantity = getNumber("Enter the new quantity:");
-            boolean check = false;
+    public void changeQty(Member member) {
+        String productName = JOptionPane.showInputDialog(frame, "Enter Product name: ");
+        Product product = warehouse.findProductByName(productName);
+        Iterator wishIter = warehouse.getWishlist(member);
+        String quant = JOptionPane.showInputDialog(frame, "Enter Quantity: ");
+        int newQuantity = -1;
+        boolean check = false;
+        try {
+            // Parse the user input as an integer
+            newQuantity = Integer.parseInt(quant);
 
-            while (wishIter.hasNext()) {
-                Record record = (Record)wishIter.next();
-                if (record.getProduct().equals(product)) {
-                    record.setQuantity(newQuantity);
-                    check = true;
-                }
+            //            JOptionPane.showMessageDialog(null, "You entered: " + enteredInteger);
+        } catch (NumberFormatException e) {
+            // Handle the case where the user entered a non-integer value
+            JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid integer.");
+            check = false;
+        }
+
+        while (wishIter.hasNext()) {
+            Record record = (Record) wishIter.next();
+            if (record.getProduct().equals(product) && newQuantity != -1) {
+                record.setQuantity(newQuantity);
+                check = true;
             }
-            if (check = false) {
-                System.out.println("Inputed Product not Found on Wishlist ");
-            }
+        }
+        if (check == false) {
+            System.out.println("Inputed Product not Found on Wishlist.");
+        }
+        else{
+            JOptionPane.showMessageDialog(frame, "Change successfully made.");
+        }
 
 //            System.out.println("New Quantity for " + product + " is " + wish.getQuantity());
     }
 
     public void showInvoices(Member member) {
-        System.out.println("Here is your Invoice:");
         Iterator invoices = warehouse.getInvoices(member);
+        StringBuilder invoiceContents = new StringBuilder();
+
         while (invoices.hasNext()) {
             Record invoice = (Record) invoices.next();
-            System.out.println(invoice.toString());
+            invoiceContents.append(invoice.toString()).append("\n");
+        }
+
+        // Check if there are any invoices
+        if (invoiceContents.length() > 0) {
+            // Display all invoices in a single JOptionPane
+            JOptionPane.showMessageDialog(frame, invoiceContents.toString(), "INVOICE", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // No invoices to display
+            JOptionPane.showMessageDialog(frame, "No Invoices found for " + member.getName(), "INVOICE", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
     public void endProcess(){
-        System.out.println("You have Successfully Checked out!");
+        JOptionPane.showMessageDialog(frame, "You have Successfully Checked out!");
         (WarehouseContext.instance()).changeState(2);
     }
-
     public void checkout(Member member) {
         Iterator wishIter = warehouse.getWishlist(member);
         boolean check = yesOrNo("Confirm Checkout:");
         if (check) {
             while (wishIter.hasNext()) {
                 Record record = (Record) wishIter.next();
+                Product p = record.getProduct();
+                int newQuantity = p.getQuantity() - record.getQuantity();
+                if (newQuantity < 0){
+                    int qauntity = record.getQuantity() - p.getQuantity();
+                    Item item = new Item(p, member, qauntity, p.getPrice());
+                    p.addWait(item);
+                    record.setQuantity(p.getQuantity());
+                    newQuantity = 0;
+                }
+                warehouse.changeProductQuantity(p.getProductName(), newQuantity);
                 member.addtoInvoice(record);
+                //member.removeWish(record);
             }
+            member.clearWishes();
             showInvoices(member);
             warehouse.save();
             endProcess();
+            frame.dispose();
         }
         else{
             help();

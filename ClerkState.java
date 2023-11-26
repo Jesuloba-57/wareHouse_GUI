@@ -1,27 +1,30 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
 
 public class ClerkState extends WarehouseState {
-    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-    private static Warehouse warehouse;
-    private WarehouseContext context;
-    private static ClerkState instance;
     private static final int EXIT = 0;
     private static final int PRINT_CATALOG = 2;
     private static final int QUERY = 3;
     private static final int ACCEPT_PAY = 4;
 
     private static final int ADD_MEMBER = 1;
-//    private static final int ADD_PRODUCT= 3;
+    //    private static final int ADD_PRODUCT= 3;
     private static final int SAVE_DATABASE = 6;
     private static final int LOGOUT = 7;
     private static final int CLIENT_MENU = 5;
     private static final int HELP = 8;
+    private static Warehouse warehouse;
+    private WarehouseContext context;
+    private static ClerkState instance;
+    private JFrame frame;
+
     private ClerkState() {
         super();
         warehouse = Warehouse.instance();
-        //context = LibContext.instance();
     }
 
     public static ClerkState instance() {
@@ -31,196 +34,160 @@ public class ClerkState extends WarehouseState {
         return instance;
     }
 
-    public String getToken(String prompt) {
-        do {
-            try {
-                System.out.println(prompt);
-                String line = reader.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(line,"\n\r\f");
-                if (tokenizer.hasMoreTokens()) {
-                    return tokenizer.nextToken();
-                }
-            } catch (IOException ioe) {
-                System.exit(0);
-            }
-        } while (true);
-    }
-    private boolean yesOrNo(String prompt) {
-        String more = getToken(prompt + " (Y|y)[es] or anything else for no");
-        if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
-            return false;
-        }
-        return true;
-    }
-    public int getNumber(String prompt) {
-        do {
-            try {
-                String item = getToken(prompt);
-                Integer num = Integer.valueOf(item);
-                return num.intValue();
-            } catch (NumberFormatException nfe) {
-                System.out.println("Please input a number ");
-            }
-        } while (true);
-    }
-    public Calendar getDate(String prompt) {
-        do {
-            try {
-                Calendar date = new GregorianCalendar();
-                String item = getToken(prompt);
-                DateFormat df = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
-                date.setTime(df.parse(item));
-                return date;
-            } catch (Exception fe) {
-                System.out.println("Please input a date as mm/dd/yy");
-            }
-        } while (true);
-    }
-    public int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(getToken("Enter command(" + HELP + " for help):"));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
+    private void createAndShowGUI() {
+        frame = new JFrame("Clerk State");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLayout(new GridLayout(5, 2));
+
+        addButton("Add Member", e -> addMember());
+        addButton("Print Catalog", e -> printCatalog());
+        addButton("Query Client", e -> queryClient());
+        addButton("Accept Payment", e -> acceptPay());
+        addButton("Become Client", e -> clientMenu());
+        addButton("Save Database", e -> saveDatabase());
+        addButton("Display Product Waitlist", e -> displayWaitlist());
+        addButton("Logout", e -> logout());
+        addButton("Help", e -> help());
+
+        frame.pack();
+        frame.setVisible(true);
+        frame.setSize(400,400);
+        frame.setLocation(400, 400);
     }
 
-    public void help() {
-        System.out.println("Enter a number between 1 and 8 as explained below:");
-//        System.out.println(EXIT + " to Exit\n");
-        System.out.println(ADD_MEMBER + " to add a member");
-        System.out.println(PRINT_CATALOG + " to display products in catalog ");
-//        System.out.println(ADD_PRODUCT + " to  add products to catalog");
-        System.out.println(QUERY + " for Client Viewing Options");
-        System.out.println(ACCEPT_PAY + " to accept Payment from a client");
-        System.out.println(CLIENT_MENU+ " to become a client");
-        System.out.println(SAVE_DATABASE + " to save the database");
-        System.out.println(LOGOUT + " to Logout");
-        System.out.println(HELP + " for help");
+    private void addButton(String label, ActionListener actionListener) {
+        JButton button = new JButton(label);
+        button.addActionListener(actionListener);
+        frame.add(button);
     }
 
-    public void addMember() {
-        String name = getToken("Enter the member's name:");
-        String address = getToken("Enter the member's address:");
-        String phone = getToken("Enter the member's phone number");
+    private void addMember() {
+        String name = JOptionPane.showInputDialog(frame, "Enter the member's name:");
+        String address = JOptionPane.showInputDialog(frame, "Enter the member's address:");
+        String phone = JOptionPane.showInputDialog(frame, "Enter the member's phone number");
 
         Member newMember = new Member(name, address, phone);
         if (MemberList.instance().insertMember(newMember)) {
-            System.out.println("Member added successfully.");
+            JOptionPane.showMessageDialog(frame, "Member added successfully.");
         } else {
-            System.out.println("Failed to add the member. Member may already exist.");
+            JOptionPane.showMessageDialog(frame, "Failed to add the member. Member may already exist.");
         }
     }
 
-    public void addProduct() {
-        String name = getToken("Enter the product name:");
-        float price = Float.parseFloat(getToken("Enter the product price:"));
-        int quantity = Integer.parseInt(getToken("Enter the product quantity:"));
-
-        Product newProduct = new Product(name, quantity, price);
-        if (Catalog.instance().insertProduct(newProduct)) {
-            System.out.println("Product added to the catalog successfully.");
-        } else {
-            System.out.println("Failed to add the product. Product may already exist.");
-        }
-
-    }
-
-    public void printCatalog() {
-        System.out.println("Product Catalog:");
+    private void printCatalog() {
+        StringBuilder catalogInfo = new StringBuilder("Product Catalog:\n");
         Iterator<Product> productIterator = Catalog.instance().getProducts();
         while (productIterator.hasNext()) {
             Product product = productIterator.next();
-            System.out.println("Product ID: " + product.getId());
-            System.out.println("Name: " + product.getProductName());
-            System.out.println("Price: $" + product.getPrice());
-            System.out.println("Quantity: " + product.getQuantity());
-            System.out.println("----------------------------");
+            catalogInfo.append("Product ID: ").append(product.getId()).append("\n");
+            catalogInfo.append("Name: ").append(product.getProductName()).append("\n");
+            catalogInfo.append("Price: $").append(product.getPrice()).append("\n");
+            catalogInfo.append("Quantity: ").append(product.getQuantity()).append("\n");
+            catalogInfo.append("----------------------------\n");
+        }
+        JOptionPane.showMessageDialog(frame, catalogInfo.toString());
+    }
+
+    private void saveDatabase() {
+        try {
+            // Serialize MemberList
+            FileOutputStream memberListFile = new FileOutputStream("MemberList.ser");
+            ObjectOutputStream memberListOut = new ObjectOutputStream(memberListFile);
+            memberListOut.writeObject(MemberList.instance());
+            memberListOut.close();
+            memberListFile.close();
+
+            // Serialize Catalog
+            FileOutputStream catalogFile = new FileOutputStream("Catalog.ser");
+            ObjectOutputStream catalogOut = new ObjectOutputStream(catalogFile);
+            catalogOut.writeObject(Catalog.instance());
+            catalogOut.close();
+            catalogFile.close();
+
+            JOptionPane.showMessageDialog(frame, "Database saved successfully.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "Error saving the database: " + e.getMessage());
         }
     }
-    public void SaveDatabase(){
-          try {
-        // Serialize MemberList
-        FileOutputStream memberListFile = new FileOutputStream("MemberList.ser");
-        ObjectOutputStream memberListOut = new ObjectOutputStream(memberListFile);
-        memberListOut.writeObject(MemberList.instance());
-        memberListOut.close();
-        memberListFile.close();
 
-        // Serialize Catalog
-        FileOutputStream catalogFile = new FileOutputStream("Catalog.ser");
-        ObjectOutputStream catalogOut = new ObjectOutputStream(catalogFile);
-        catalogOut.writeObject(Catalog.instance());
-        catalogOut.close();
-        catalogFile.close();
-
-        System.out.println("Database saved successfully.");
-    } catch (IOException e) {
-        System.out.println("Error saving the database: " + e.getMessage());
-    }
-    }
-
-    public void queryClient(){
+    private void queryClient() {
         (WarehouseContext.instance()).changeState(5);
+        frame.dispose(); // Close the Clerk State window
     }
 
-    public void acceptPay(){
-        System.out.println("Dummy Function");
+    private void acceptPay() {
+        JOptionPane.showMessageDialog(frame, "Dummy Function");
     }
 
-    public void clientMenu()
-    {
-        String userID = getToken("Please input the user id: ");
-        if (Warehouse.instance().searchMembership(userID) != null){
-            (WarehouseContext.instance()).setUser(userID);
+    private void clientMenu() {
+//        String userID = JOptionPane.showInputDialog(frame, "Please input the user id: ");
+//        if (Warehouse.instance().searchMembership(userID) != null) {
+//            (WarehouseContext.instance()).setUser(userID);
             (WarehouseContext.instance()).changeState(2);
-        }
-        else
-            System.out.println("Invalid user id.");
+            frame.dispose(); // Close the Clerk State window
+//        } else {
+//            JOptionPane.showMessageDialog(frame, "Invalid user id.");
+//        }
     }
 
-    public void logout()
-    {
-        if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk)
-        { //stem.out.println(" going to clerk \n ");
-            (WarehouseContext.instance()).changeState(3); // exit with a code 1
+    private void logout() {
+        if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk) {
+            (WarehouseContext.instance()).changeState(3);
+            frame.dispose(); // Close the Clerk State window
         }
-        else
-            (WarehouseContext.instance()).changeState(0); // exit code 2, indicates error
+        else {
+            (WarehouseContext.instance()).changeState(0);
+            frame.dispose(); // Close the Clerk State window
+        }
     }
+    private void displayWaitlist(){
+        String name = JOptionPane.showInputDialog(null, "Enter Product Name:");
+        Product product = warehouse.findProductByName(name);
 
+        // Ensure that the product is not null before proceeding
+        if (product != null) {
+            if (product.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Product does not have a waitlist");
+            } else {
+                Iterator allItems = warehouse.getWaitlist(product);
+                StringBuilder waitlistMessage = new StringBuilder("Waitlist for " + product.getProductName() + ":\n");
 
-    public void process() {
+                while (allItems.hasNext()) {
+                    Item item = (Item) (allItems.next());
+                    waitlistMessage.append(item.toString()).append("\n");
+                }
 
-        int command;
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
-                case ADD_MEMBER:        addMember();
-                    break;
-                case ACCEPT_PAY:         acceptPay();
-                    break;
-                case PRINT_CATALOG:      printCatalog();
-                    break;
-                case SAVE_DATABASE:      SaveDatabase();
-                    break;
-                case LOGOUT:      logout();
-                    break;
-                case QUERY:              queryClient();
-                    break;
-                case CLIENT_MENU:          clientMenu();
-                    break;
-                case HELP:              help();
-                    break;
+                JOptionPane.showMessageDialog(null, waitlistMessage.toString());
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Product entered does not exist in catalog");
         }
-        logout();
     }
+
+    private void help() {
+        StringBuilder message = new StringBuilder("Enter a number between 1 and 8 as explained below:\n");
+        message.append(EXIT).append(" to Exit\n");
+        message.append(ADD_MEMBER).append(" to add a member\n");
+        message.append(PRINT_CATALOG).append(" to display products in catalog\n");
+        message.append(QUERY).append(" for Client Viewing Options\n");
+        message.append(ACCEPT_PAY).append(" to accept Payment from a client\n");
+        message.append(CLIENT_MENU).append(" to become a client\n");
+        message.append(SAVE_DATABASE).append(" to save the database\n");
+        message.append(LOGOUT).append(" to Logout\n");
+        message.append(HELP).append(" for help\n");
+        JOptionPane.showMessageDialog(frame, message.toString());
+    }
+
     public void run() {
-        process();
+        SwingUtilities.invokeLater(this::createAndShowGUI);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ClerkState.instance().run();
+            }
+        });
     }
 }

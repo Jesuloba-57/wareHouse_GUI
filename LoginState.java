@@ -2,17 +2,25 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 import java.util.Scanner;
-public class LoginState extends WarehouseState{
-    private static final int CLERK_LOGIN = 1;
-    private static final int MANAGER_LOGIN = 0;
-    private static final int USER_LOGIN = 2;
-    private static final int EXIT = 3;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class LoginState extends WarehouseState implements ActionListener {
+    private JFrame frame;
+    private AbstractButton clientButton, exitButton, clerkButton, managerButton;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private WarehouseContext context;
     private static LoginState instance;
+
     private LoginState() {
         super();
-        // context = LibContext.instance();
+//        if (frame == null) {
+//            frame = new JFrame("Login");
+//            frame.setBounds(100, 100, 300, 200);
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            frame.setLocationRelativeTo(null);
+//        }
     }
 
     public static LoginState instance() {
@@ -22,131 +30,81 @@ public class LoginState extends WarehouseState{
         return instance;
     }
 
-    public int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(getToken("Enter command:" ));
-                if (value <= EXIT && value >= MANAGER_LOGIN) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
-    }
-
-    public String getToken(String prompt) {
-        do {
-            try {
-                System.out.println(prompt);
-                String line = reader.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(line,"\n\r\f");
-                if (tokenizer.hasMoreTokens()) {
-                    return tokenizer.nextToken();
-                }
-            } catch (IOException ioe) {
-                System.exit(0);
-            }
-        } while (true);
-    }
-
-    private boolean yesOrNo(String prompt) {
-        String more = getToken(prompt + " (Y|y)[es] or anything else for no");
-        if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
-            return false;
-        }
-        return true;
-    }
-    private boolean verifyPassword(String user, String pass, String role){
-        if("clerk".equals(role)) {
-            if ("salesclerk".equals(user) && "salesclerk".equals(pass)) {
-                return true;
-            } else {
-                //System.out.println(user + pass);
-                return false;
-            }
-        }
-        if("manager".equals(role)) {
-            if ("manager".equals(user) && "manager".equals(pass)) {
-                return true;
-            } else {
-                //System.out.println(user + pass);
-                return false;
-            }
-        }
-        else{
-            return false;
+    public void actionPerformed(ActionEvent event) {
+        if (event.getSource().equals(this.clientButton)) {
+            this.user();
+        } else if (event.getSource().equals(this.managerButton)) {
+            this.manager();
+//        } else if (event.getSource().equals(this.clerkButton)) {
+//            this.clerk();
+        } else if (event.getSource().equals(this.exitButton)) {
+            (WarehouseContext.instance()).changeState(3);
         }
     }
 
-    private void clerk(){
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Logging in as Clerk");
-        System.out.println("Enter UserName: ");
-        String userName = scanner.nextLine();
-        System.out.println("Enter Password: ");
-        String password = scanner.nextLine();
-        if (verifyPassword(userName, password, "clerk") == true) {
-            (WarehouseContext.instance()).setLogin(WarehouseContext.IsClerk);
-            (WarehouseContext.instance()).changeState(1);
-        }
-        else{
-            System.out.println("Invalid Username or password");
-        }
-    }
-    private void manager(){
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Logging In as Manager");
-        System.out.println("Enter UserName: ");
-        String userName = scanner.nextLine();
-        System.out.println("Enter Password: ");
-        String password = scanner.nextLine();
-        if(verifyPassword(userName, password, "manager") == true) {
-            (WarehouseContext.instance()).setLogin(WarehouseContext.IsManager);
-            (WarehouseContext.instance()).changeState(0);
-        }
-        else{
-            System.out.println("Invalid Username or password");
-        }
+    public void clear() {
+        frame.getContentPane().removeAll();
+        frame.paint(frame.getGraphics());
     }
 
-    private void user(){
-//        String userID = getToken("Please input the user id: ");
-//        if (Warehouse.instance().searchMembership(userID) != null){
-//            (WarehouseContext.instance()).setLogin(WarehouseContext.IsClient);
-//            (WarehouseContext.instance()).setUser(userID);
-            (WarehouseContext.instance()).changeState(2);
-//        }
-//        else
-//            System.out.println("Invalid user id.");
+    private void manager() {
+        (WarehouseContext.instance()).setLogin(WarehouseContext.IsManager);
+        (WarehouseContext.instance()).changeState(0);
+    }
+
+    private void user() {
+        (WarehouseContext.instance()).setLogin(WarehouseContext.IsClient);
+        (WarehouseContext.instance()).changeState(2);
     }
 
     public void process() {
-        int command;
-        System.out.println("Please input 0 to login as Manager\n"+
-                "input 1 to login as Clerk\n" +
-                "input 2 to login as Client\n" +
-                "Input 3 to exit the system\n");
-        while ((command = getCommand()) != EXIT) {
-//                System.out.println("Command entered: " + command);
-//                System.out.println("Manager_Login integer: " + MANAGER_LOGIN);
-            switch (command) {
-                case CLERK_LOGIN:       clerk();
-                    break;
-                case USER_LOGIN:        user();
-                    break;
-                case MANAGER_LOGIN:     manager();
-                    break;
+        frame = new JFrame("Login");
+        frame.setBounds(100, 100, 300, 200);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        //frame.setLocationRelativeTo(null);
 
-                default:                System.out.println("Invalid choice");
+        clientButton = new JButton("Client");
+        clerkButton = new JButton("Clerk");
+        managerButton = new JButton("Manager");
+        exitButton = new JButton("Exit");
 
+        clientButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                user();
+                frame.dispose();
             }
-            System.out.println("Please input 0 to login as Manager\n"+
-                    "input 1 to login as Clerk\n" +
-                    "input 2 to login as Client\n" +
-                    "Input 3 to exit the system\n");
-        }
-        (WarehouseContext.instance()).changeState(3);
+        });
+
+        managerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                manager();
+                frame.dispose();
+            }
+        });
+
+        clerkButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new ClerkButton().actionPerformed(e);
+                frame.dispose();
+            }
+        });
+
+        exitButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                (WarehouseContext.instance()).changeState(3);
+                frame.dispose();
+            }
+        });
+
+        frame.setLayout(new GridLayout(4, 1));
+        frame.setSize(400,400);
+        frame.setLocation(400, 400);
+        frame.add(clientButton);
+        frame.add(clerkButton);
+        frame.add(managerButton);
+        frame.add(exitButton);
+        frame.setVisible(true);
+
     }
 
     public void run() {

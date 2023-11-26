@@ -53,6 +53,9 @@ public class Member implements Serializable{
     public boolean addtoInvoice(Record rec){
         return invoice.addToInvoices(rec);
     }
+    public void clearWishes(){
+        wishlist.emptyWishlist();
+    }
     public boolean removeWish(Record record){
         return wishlist.removeFromWishlist(record);
     }

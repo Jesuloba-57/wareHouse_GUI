@@ -1,9 +1,11 @@
-import java.util.*;
-import java.text.*;
-import java.io.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Iterator;
+
 public class ClientState extends WarehouseState {
     private static ClientState clientState;
-    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    private JFrame frame;
     private static Warehouse warehouse;
     private static final int EXIT = 0;
     private static final int VIEW_ACCOUNT = 1;
@@ -14,8 +16,8 @@ public class ClientState extends WarehouseState {
     private static final int LOGOUT = 7;
     private static final int VIEW_INVOICES = 3;
     private static final int HELP = 8;
-    private ClientState() {
 
+    private ClientState() {
         warehouse = Warehouse.instance();
     }
 
@@ -26,295 +28,135 @@ public class ClientState extends WarehouseState {
             return clientState;
         }
     }
-    public String getToken(String prompt) {
-        do {
-            try {
-                System.out.println(prompt);
-                String line = reader.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(line,"\n\r\f");
-                if (tokenizer.hasMoreTokens()) {
-                    return tokenizer.nextToken();
-                }
-            } catch (IOException ioe) {
-                System.exit(0);
-            }
-        } while (true);
-    }
-    private boolean yesOrNo(String prompt) {
-        String more = getToken(prompt + " (Y|y)[es] or anything else for no");
-        if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
-            return false;
+
+    private void createAndShowGUI() {
+        frame = new JFrame("Client State");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // Prompt for a valid member name
+        String memberName = promptForValidMemberName();
+        if (memberName == null) {
+            // User canceled or entered an invalid member name, so terminate
+            (WarehouseContext.instance()).changeState(3);
+            return;
         }
-        return true;
-    }
-//    public int getNumber(String prompt) {
-//        do {
-//            try {
-//                String item = getToken(prompt);
-//                Integer num = Integer.valueOf(item);
-//                return num.intValue();
-//            } catch (NumberFormatException nfe) {
-//                System.out.println("Please input a number ");
-//            }
-//        } while (true);
-//    }
 
-    public int getCommand() {
+        frame.setLayout(new GridLayout(7, 1));
+        addButton("View Account", e -> viewAccount(memberName));
+        addButton("Check Price", e -> checkPrice());
+        addButton("Process Wishlist", e -> processShopping());
+        addButton("Show Payments", e -> showPayments());
+        addButton("Print Invoices", e -> printInvoices(memberName));
+        addButton("Logout", e -> logout());
+        addButton("Help", e -> help());
+//        addButton("Exit", e -> exit());
+
+        //frame.setLocationRelativeTo(null);
+        frame.setSize(400,400);
+        frame.setLocation(400, 400);
+        //frame.setBounds(100, 100, 300, 200);
+        frame.setVisible(true);
+    }
+
+    private String promptForValidMemberName() {
+        String memberName;
         do {
-            try {
-                int value = Integer.parseInt(getToken("Enter command(" + HELP + " for help): "));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
+            memberName = JOptionPane.showInputDialog(frame, "Enter Member Name:");
+            if (memberName == null) {
+                // User clicked Cancel, terminate
+                JOptionPane.showMessageDialog(frame, "Member Not Found! Try again");
+                return null;
             }
-        } while (true);
+        } while (!isValidMemberName(memberName));
+
+        return memberName;
     }
 
-    public void viewAccount(Member member){
-//        String name = getToken("Enter Member Name: ");
-//        if(warehouse.findMemberByName(name) != null) {
-//            Member member = warehouse.findMemberByName(name);
-            System.out.println(member.toString());
-//        }
-//        else{
-//            System.out.println("Member does not exist");
-//        }
+    private boolean isValidMemberName(String memberName) {
+        // Add your logic to check if the entered member name is valid
+        // For example, check if the member with the given name exists in the warehouse
+        return warehouse.findMemberByName(memberName) != null;
     }
-    public void displayWaitlist(){
 
+    private void addButton(String label, ActionListener actionListener) {
+        JButton button = new JButton(label);
+        button.addActionListener(actionListener);
+        frame.add(button);
     }
-    public void checkPrice(){
-//        String name = getToken("Enter Product Name: ");
-//        if(warehouse.findProductByName(name) != null) {
-//            Product product = warehouse.findProductByName(name);
-//            String price = "Price: $" + product.getPrice();
-//            System.out.println(price);
-//        }
-//        else{
-//            System.out.println("Product does not exist");
-//        }
+
+    private void viewAccount(String memberName) {
+        Member member = warehouse.findMemberByName(memberName);
+        JOptionPane.showMessageDialog(frame, member.toString());
+    }
+
+    private void checkPrice() {
+        StringBuilder prices = new StringBuilder("Product Prices:\n");
         Iterator allProducts = warehouse.getProducts();
         while (allProducts.hasNext()) {
             Product product = (Product) (allProducts.next());
-            System.out.println(product.toString());
+            prices.append(product.toString()).append("\n");
         }
-    }
-//    public void processWishlist(){
-//        //System.out.println("process Wishlist");
-//        String Name = getToken("Enter Client Name: ");
-//        Member member = warehouse.findMemberByName(Name);
-//        Iterator wishIter = warehouse.getWishlist(member);
-//
-//        System.out.println("Your processing Options:");
-//        System.out.println("1. Add item to Invoice");
-//        System.out.println("2. Remove item from wishlist");
-//        System.out.println("3. Change item quantity and add to Invoice");
-//
-//        while (wishIter.hasNext()) {
-//            Record wish = (Record) (wishIter.next());
-//            System.out.println(wish.toString());
-//            int choice = getNumber("Enter your choice:");
-//            switch (choice) {
-//                case 1:
-//                    int success = warehouse.addToInvoices(wish, member);
-//                    if (success == 0) {
-//                        System.out.println("Item Added");
-//                    } else if (success == 1) {
-//                        System.out.println("Item Added to Waitlist");
-//                    } else {
-//                        System.out.println("Unexpected Input");
-//                    }
-//
-//                case 2:
-//                    if (member != null) {
-//                        Record record = new Record(wish.getProduct(), member, wish.getQuantity(), wish.getPrice());
-//                        boolean removed = warehouse.removeFromWishlist(member, record);
-//                        if (removed) {
-//                            System.out.println("Item removed from the wishlist.");
-//                        } else {
-//                            System.out.println("Item was not found on the wishlist.");
-//                        }
-//                    } else {
-//                        System.out.println("Product or member not found.");
-//                    }
-//                    break;
-//
-//                case 3:
-//                    if (member != null) {
-//                        int newQuantity = getNumber("Enter the new quantity:");
-//                        wish.setQuantity(newQuantity);
-//                        int done = warehouse.addToInvoices(wish, member);
-//                        if (done == 0) {
-//                            System.out.println("Item Added");
-//                        } else if (done == 1) {
-//                            System.out.println("Item Added to Waitlist");
-//                        } else {
-//                            System.out.println("Unexpected Input");
-//                        }
-//                        break;
-//                    }
-//            }
-//        }
-//        warehouse.getInvoices(member);
-//    }
-    public void showPayments(){
-        System.out.println("Dummy Function");
+        JOptionPane.showMessageDialog(frame, prices.toString());
     }
 
-    public void processShopping(){
-        System.out.println("Switching to Shopping Processing state");
+    private void processShopping() {
+        JOptionPane.showMessageDialog(frame, "Switching to Shopping Processing state");
         (WarehouseContext.instance()).changeState(4);
+        frame.dispose(); // Close the Client State window
     }
 
-//    public void modifyWishlist(){
-//        //System.out.println("modify Wishlist");
-//        String Name = getToken("Enter Client Name: ");
-//        Member member = warehouse.findMemberByName(Name);
-//        Iterator wishIter = warehouse.getWishlist(member);
-//
-//        System.out.println("Your processing Options:");
-//        System.out.println("1. Add item to wishlist");
-//        System.out.println("2. Remove item from wishlist");
-//        System.out.println("3. Change item quantity on wishlist");
-//        System.out.println("4. Display Wishlist");
-//
-//        while (wishIter.hasNext()) {
-//            Record wish = (Record) (wishIter.next());
-//            System.out.println(wish.toString());
-//            int choice = getNumber("Enter your choice:");
-//            switch (choice) {
-//                case 1:
-//                    String productName = getToken("Enter Product Name");
-//                    //String memberName = getToken("Enter Member Name");
-//                    int quantity = getNumber("Enter Quantity");
-//
-//                    Product product = warehouse.findProductByName(productName);
-//                    //Member member = warehouse.findMemberByName(memberName);
-//                    float price = product.getPrice();
-//                    if (product != null && member != null) {
-//                        Record record = new Record(product, member, quantity, price);
-//                        boolean added = warehouse.addToWishlist(member, record);
-//
-//                        if (added) {
-//                            System.out.println("Item added to the wishlist.");
-//                        } else {
-//                            System.out.println("Item could not be added to the wishlist.");
-//                        }
-//                    } else {
-//                        System.out.println("Product or member not found.");
-//                    }
-//
-//                case 2:
-//                    if (member != null) {
-//                        Record record = new Record(wish.getProduct(), member, wish.getQuantity(), wish.getPrice());
-//                        boolean removed = warehouse.removeFromWishlist(member, record);
-//                        if (removed) {
-//                            System.out.println("Item removed from the wishlist.");
-//                        } else {
-//                            System.out.println("Item was not found on the wishlist.");
-//                        }
-//                    } else {
-//                        System.out.println("Product or member not found.");
-//                    }
-//                    break;
-//
-//                case 3:
-//                    if (member != null) {
-//                        int newQuantity = getNumber("Enter the new quantity:");
-//                        wish.setQuantity(newQuantity);
-//                        System.out.println("New Quantity for " + wish.getProduct() + " is " + wish.getQuantity());
-//                        //int done = warehouse.addToInvoices(wish, member);
-//                        //if (done == 0) {
-//                            //System.out.println("Item Added");
-//                        //} else if (done == 1) {
-//                           //System.out.println("Item Added to Waitlist");
-//                        //} else {
-//                            //System.out.println("Unexpected Input");
-//                        }
-//                        break;
-//                    }
-//            }
-//        }
+    private void showPayments() {
+        JOptionPane.showMessageDialog(frame, "Dummy Function");
+    }
 
-    public void printInvoices(Member member) {
-//        String name = getToken("Confirm your name: ");
-//        Member member = warehouse.findMemberByName(name);
-        Iterator invoices = warehouse.getInvoices(member);
-        while (invoices.hasNext()) {
-            Record invoice = (Record) invoices.next();
-            System.out.println(invoice.toString());
+    private void printInvoices(String memberName) {
+        Member member = warehouse.findMemberByName(memberName);
+        StringBuilder invoices = new StringBuilder("Invoices:\n");
+        Iterator invoiceIterator = warehouse.getInvoices(member);
+        while (invoiceIterator.hasNext()) {
+            Record invoice = (Record) invoiceIterator.next();
+            invoices.append(invoice.toString()).append("\n");
         }
+        JOptionPane.showMessageDialog(frame, invoices.toString());
     }
 
-    public void help() {
-        System.out.println("\nEnter a number between 1 and 8 as explained below:");
-        System.out.println(VIEW_ACCOUNT + " to view your account details");
-        System.out.println(CHECK_PRICE + " to display products and their prices");
-        System.out.println(VIEW_INVOICES + " to print your invoices");
-        System.out.println(SHOW_PAYMENT + " to show payments");
-        System.out.println(PROCESS_WISHLIST + " to process your wishlist");
-//        System.out.println(MODIFY_WISHLIST + " to modify your wishlist");
-//        System.out.println(PROCESS_SHOPPING + " to process your Shopping");
-        System.out.println(LOGOUT + " to logout");
-        System.out.println(HELP + " for help\n");
-    }
-
-
-
-    public void process() {
-        int command;
-        boolean check = false;
-        String name = getToken("Enter Member Name: ");
-        if(warehouse.findMemberByName(name) != null) {
-            check = true;
-            help();
+    private void logout() {
+        if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk) {
+            (WarehouseContext.instance()).changeState(1);
+            frame.dispose(); // Close the Clerk State window
         }
         else{
-            System.out.println("Member not found!");
+            JOptionPane.showMessageDialog(frame, "Logging out");
+            (WarehouseContext.instance()).changeState(2); // exit code 2, indicates client logout
+            frame.dispose(); // Close the Client State window
         }
-        while (check && (command = getCommand()) != EXIT) {
-            Member member = warehouse.findMemberByName(name);
-            switch (command) {
-
-                case VIEW_ACCOUNT:       viewAccount(member);
-                    break;
-                case CHECK_PRICE:       checkPrice();
-                    break;
-                case PROCESS_WISHLIST:        processShopping();;
-//                    break;
-//                case MODIFY_WISHLIST:       modifyWishlist();
-//                    break;
-                case SHOW_PAYMENT:       showPayments();
-                    break;
-                case VIEW_INVOICES:  printInvoices(member);
-                    break;
-                case LOGOUT:  logout();
-                    break;
-                case HELP:              help();
-                    break;
-            }
-        }
-        logout();
     }
 
+    private void help() {
+        StringBuilder message = new StringBuilder("\nEnter a number between 1 and 8 as explained below:\n");
+        message.append(VIEW_ACCOUNT).append(" to view your account details\n");
+        message.append(CHECK_PRICE).append(" to display products and their prices\n");
+        message.append(VIEW_INVOICES).append(" to print your invoices\n");
+        message.append(SHOW_PAYMENT).append(" to show payments\n");
+        message.append(PROCESS_WISHLIST).append(" to process your wishlist\n");
+        message.append(LOGOUT).append(" to logout\n");
+        message.append(HELP).append(" for help\n");
+        JOptionPane.showMessageDialog(frame, message.toString());
+    }
+
+    private void exit() {
+        frame.dispose();
+    }
+
+    @Override
     public void run() {
-        process();
+        // You may need to implement the logic for the run method based on your application flow
+        // This could include prompting for member name, checking member existence, etc.
+        // For this example, we'll use a placeholder name "SampleMember"
+        SwingUtilities.invokeLater(this::createAndShowGUI);
     }
 
-    public void logout()
-    {
-        if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk)
-        { //stem.out.println(" going to clerk \n ");
-            (WarehouseContext.instance()).changeState(1); // exit with a code 1
-        }
-        else if (WarehouseContext.instance().getLogin() == WarehouseContext.IsClient)
-        {  //stem.out.println(" going to login \n");
-            (WarehouseContext.instance()).changeState(3); // exit with a code 2
-        }
-        else
-            (WarehouseContext.instance()).changeState(2); // exit code 2, indicates error
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> ClientState.instance().run());
     }
-
 }

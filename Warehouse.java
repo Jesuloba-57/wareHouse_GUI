@@ -15,9 +15,7 @@ public class Warehouse implements Serializable{
     public static final int NO_SUCH_MEMBER = 9;
     private Catalog catalog;
     private MemberList memberList;
-    //private Waitlist waitList;
-    //private Wishlist wishlist;
-    //private InvoiceList invoiceList;
+
 
     private static Warehouse warehouse;
     private Warehouse(){
@@ -195,7 +193,7 @@ public class Warehouse implements Serializable{
 //            Scanner keyboard = new Scanner(System.in);
 //            System.out.println("filename");
 //            String filename = keyboard.next();
-            FileInputStream file = new FileInputStream("WarehouseData");
+            FileInputStream file = new FileInputStream("WarehouseData1");
             ObjectInputStream input = new ObjectInputStream(file);
             warehouse = (Warehouse) input.readObject();
             MemberIdServer.retrieve(input);
@@ -213,7 +211,7 @@ public class Warehouse implements Serializable{
     }
     public static  boolean save() {
         try {
-            FileOutputStream file = new FileOutputStream("WarehouseData");
+            FileOutputStream file = new FileOutputStream("WarehouseData1");
             ObjectOutputStream output = new ObjectOutputStream(file);
             output.writeObject(warehouse);
             output.writeObject(MemberIdServer.instance());
